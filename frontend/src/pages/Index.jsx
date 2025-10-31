@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
-    Activity,
+  Activity,
   Calendar,
   Users,
   Heart,
@@ -16,15 +16,8 @@ import Navbar from "../components/Navbar";
 const Index = () => {
   const [showTopBtn, setShowTopBtn] = useState(false);
   const [counts, setCounts] = useState({ doctors: 0, patients: 0, success: 0 });
-  const [user, setUser] = useState(null);
 
-  // Load user from localStorage
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) setUser(JSON.parse(storedUser));
-  }, []);
-
-  // Animated stats effect
+  // ✅ Animated stats effect
   useEffect(() => {
     let d = 0,
       p = 0,
@@ -39,7 +32,7 @@ const Index = () => {
     return () => clearInterval(interval);
   }, []);
 
-  // Show scroll-to-top button
+  // ✅ Show scroll-to-top button
   useEffect(() => {
     const handleScroll = () => setShowTopBtn(window.scrollY > 300);
     window.addEventListener("scroll", handleScroll);
@@ -48,18 +41,19 @@ const Index = () => {
 
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
+  // ✅ No need to store user here — Navbar handles that globally
   const handleLogout = () => {
     localStorage.removeItem("user");
     localStorage.removeItem("token");
-    setUser(null);
+    window.location.reload();
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
-      {/* Navbar */}
-      <Navbar user={user} onLogout={handleLogout} />
+      {/* Navbar (automatically detects login) */}
+      <Navbar onLogout={handleLogout} />
 
-      {/* Hero */}
+      {/* Hero Section */}
       <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
         <div className="container mx-auto grid lg:grid-cols-2 gap-12 items-center">
           <div className="animate-fade-in">
@@ -74,7 +68,7 @@ const Index = () => {
               consult top doctors, and manage your health all in one place.
             </p>
 
-            {/* Doctor search input */}
+            {/* Search Bar */}
             <div className="relative mb-6 max-w-md">
               <input
                 type="text"
@@ -98,6 +92,7 @@ const Index = () => {
             </div>
           </div>
 
+          {/* Hero Image */}
           <div className="relative animate-scale-in">
             <img
               src="https://th.bing.com/th/id/OIP.5Uy0ZHbYVWm-qmyvBgImvAHaEh?w=270&h=180&c=7&r=0&o=7&cb=12&dpr=1.5&pid=1.7&rm=3"
@@ -170,7 +165,9 @@ const Index = () => {
             <p className="text-xl text-white/90">Expert Doctors</p>
           </div>
           <div>
-            <p className="text-5xl font-bold mb-2">{counts.patients.toLocaleString()}+</p>
+            <p className="text-5xl font-bold mb-2">
+              {counts.patients.toLocaleString()}+
+            </p>
             <p className="text-xl text-white/90">Happy Patients</p>
           </div>
           <div>
@@ -187,14 +184,28 @@ const Index = () => {
       {/* Testimonials */}
       <section className="py-20 bg-gray-50 text-center">
         <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold mb-12 text-gray-900">What Our Patients Say</h2>
+          <h2 className="text-4xl font-bold mb-12 text-gray-900">
+            What Our Patients Say
+          </h2>
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { name: "Dr. Emily Carter", text: "MediCare+ makes managing my patients so much easier. The appointment system is flawless!" },
-              { name: "John Matthews", text: "Booking appointments online saved me hours. The doctors here truly care about patients." },
-              { name: "Sarah Khan", text: "Excellent support and privacy. I can access my reports anytime. Highly recommended!" },
+              {
+                name: "Dr. Emily Carter",
+                text: "MediCare+ makes managing my patients so much easier. The appointment system is flawless!",
+              },
+              {
+                name: "John Matthews",
+                text: "Booking appointments online saved me hours. The doctors here truly care about patients.",
+              },
+              {
+                name: "Sarah Khan",
+                text: "Excellent support and privacy. I can access my reports anytime. Highly recommended!",
+              },
             ].map((t, i) => (
-              <div key={i} className="bg-white rounded-2xl p-8 shadow-lg hover:-translate-y-2 transition">
+              <div
+                key={i}
+                className="bg-white rounded-2xl p-8 shadow-lg hover:-translate-y-2 transition"
+              >
                 <Quote className="h-8 w-8 text-blue-500 mb-4 mx-auto" />
                 <p className="text-gray-600 mb-6 italic">"{t.text}"</p>
                 <h4 className="font-semibold text-gray-900">{t.name}</h4>
@@ -208,7 +219,9 @@ const Index = () => {
       <section className="py-20 px-4 sm:px-6 lg:px-8">
         <div className="container mx-auto">
           <div className="bg-gradient-to-r from-blue-500 to-cyan-500 rounded-3xl p-12 text-center text-white shadow-2xl">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">Ready to Get Started?</h2>
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              Ready to Get Started?
+            </h2>
             <p className="text-xl mb-8 text-white/90">
               Join thousands of patients who trust MediCare+ for their care.
             </p>
@@ -229,7 +242,9 @@ const Index = () => {
               <Activity className="h-6 w-6 text-blue-500" />
               <span>MediCare+</span>
             </div>
-            <p className="text-gray-400">Your trusted partner in healthcare excellence.</p>
+            <p className="text-gray-400">
+              Your trusted partner in healthcare excellence.
+            </p>
           </div>
 
           <div>

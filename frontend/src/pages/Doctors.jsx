@@ -8,6 +8,7 @@ const Doctors = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSpecialty, setSelectedSpecialty] = useState("All");
   const [user, setUser] = useState(null);
+  const [doctors, setDoctors] = useState([]);
 
   // Load user from localStorage
   useEffect(() => {
@@ -21,22 +22,28 @@ const Doctors = () => {
     setUser(null);
   };
 
-  const doctors = [
-    { id: 1, name: "Dr. Sarah Johnson", specialty: "Cardiologist", rating: 4.9, reviews: 234, experience: "15 years", image: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=300&q=80", location: "New York, NY", available: true, nextAvailable: "Today, 4:00 PM" },
-    { id: 2, name: "Dr. Michael Chen", specialty: "Dermatologist", rating: 4.8, reviews: 189, experience: "12 years", image: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&w=300&q=80", location: "Los Angeles, CA", available: true, nextAvailable: "Tomorrow, 10:30 AM" },
-    { id: 3, name: "Dr. Emily Williams", specialty: "Pediatrician", rating: 5.0, reviews: 312, experience: "18 years", image: "https://images.unsplash.com/photo-1594824476967-48c8b964273f?auto=format&fit=crop&w=300&q=80", location: "Chicago, IL", available: false, nextAvailable: "In 2 days" },
-    { id: 4, name: "Dr. James Rodriguez", specialty: "Orthopedic", rating: 4.7, reviews: 156, experience: "10 years", image: "https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=300&q=80", location: "Houston, TX", available: true, nextAvailable: "Today, 2:00 PM" },
-    { id: 5, name: "Dr. Lisa Anderson", specialty: "Neurologist", rating: 4.9, reviews: 278, experience: "20 years", image: "https://images.unsplash.com/photo-1526256262350-7da7584cf5eb?auto=format&fit=crop&w=300&q=80", location: "Boston, MA", available: true, nextAvailable: "Tomorrow, 9:00 AM" },
-    { id: 6, name: "Dr. Robert Kim", specialty: "Cardiologist", rating: 4.8, reviews: 201, experience: "14 years", image: "https://images.unsplash.com/photo-1607746882042-944635dfe10e?auto=format&fit=crop&w=300&q=80", location: "San Francisco, CA", available: false, nextAvailable: "In 3 days" },
-  ];
+  // ✅ Fetch doctors from backend
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/doctors");
+        const data = await res.json();
+        setDoctors(data);
+      } catch (error) {
+        console.error("Error fetching doctors:", error);
+      }
+    };
+    fetchDoctors();
+  }, []);
 
-  const specialties = ["All", "Cardiologist", "Dermatologist", "Pediatrician", "Orthopedic", "Neurologist"];
+  const specialties = ["All", ...new Set(doctors.map((doc) => doc.specialty))];
 
   const filteredDoctors = doctors.filter((doctor) => {
     const matchesSearch =
       doctor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       doctor.specialty.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesSpecialty = selectedSpecialty === "All" || doctor.specialty === selectedSpecialty;
+    const matchesSpecialty =
+      selectedSpecialty === "All" || doctor.specialty === selectedSpecialty;
     return matchesSearch && matchesSpecialty;
   });
 
@@ -93,7 +100,7 @@ const Doctors = () => {
         <div className="container mx-auto grid md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredDoctors.map((doctor, index) => (
             <div
-              key={doctor.id}
+              key={doctor._id}
               className="group bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-2"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
@@ -105,9 +112,7 @@ const Doctors = () => {
                 />
                 <span
                   className={`absolute top-4 right-4 px-3 py-1 rounded-full text-sm font-semibold ${
-                    doctor.available
-                      ? "bg-green-500 text-white"
-                      : "bg-gray-400 text-white"
+                    doctor.available ? "bg-green-500 text-white" : "bg-gray-400 text-white"
                   }`}
                 >
                   {doctor.available ? "Available" : "Unavailable"}
@@ -157,7 +162,8 @@ const Doctors = () => {
                         : "bg-gray-200 text-gray-500 cursor-not-allowed"
                     }`}
                   >
-                    <Calendar className="h-5 w-5" /> {doctor.available ? "Book Appointment" : "Not Available"}
+                    <Calendar className="h-5 w-5" />{" "}
+                    {doctor.available ? "Book Appointment" : "Not Available"}
                   </button>
                 </Link>
               </div>

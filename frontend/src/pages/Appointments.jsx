@@ -1,13 +1,12 @@
-// pages/Appointments.jsx
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 
 const Appointments = () => {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
-    patientName: "",
-    email: "",
-    phone: "",
     doctor: "",
     date: "",
     time: "",
@@ -15,158 +14,183 @@ const Appointments = () => {
   });
 
   const [user, setUser] = useState(null);
+  const [doctors, setDoctors] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
-  // Load user from localStorage
+  // ✅ Load user from localStorage
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    if (storedUser) setUser(JSON.parse(storedUser));
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+      console.log("✅ Loaded user:", JSON.parse(storedUser));
+    } else {
+      console.warn("⚠️ No user found in localStorage");
+    }
   }, []);
 
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("token");
-    setUser(null);
-  };
+  // ✅ Load mock doctors (no backend)
+  useEffect(() => {
+    const mockDoctors = [
+      { _id: "1", name: "Dr. Sarah Williams", specialty: "Cardiologist" },
+      { _id: "2", name: "Dr. Rajesh Kumar", specialty: "Dermatologist" },
+      { _id: "3", name: "Dr. Emily Davis", specialty: "Neurologist" },
+      { _id: "4", name: "Dr. John Smith", specialty: "Pediatrician" },
+    ];
+    setDoctors(mockDoctors);
+  }, []);
 
+  // ✅ Form submission
   const handleSubmit = (e) => {
-    e.preventDefault();
-    toast.success("Appointment booked successfully!", {
-      description: "We'll send you a confirmation email shortly.",
-    });
-    setFormData({
-      patientName: "",
-      email: "",
-      phone: "",
-      doctor: "",
-      date: "",
-      time: "",
-      reason: "",
-    });
-  };
+  e.preventDefault();
+  console.log("📤 handleSubmit triggered with data:", formData);
+
+  // Allow booking even without login
+  const storedUser = localStorage.getItem("user");
+  const userData = storedUser ? JSON.parse(storedUser) : { fullName: "Guest" };
+
+  if (!formData.doctor || !formData.date || !formData.time) {
+    toast.error("Please fill all required fields.");
+    return;
+  }
+
+  setLoading(true);
+
+  setTimeout(() => {
+    const newAppointment = {
+      id: Date.now(),
+      user: userData.fullName,
+      doctor:
+        doctors.find((d) => d._id === formData.doctor)?.name || "Unknown Doctor",
+      specialty:
+        doctors.find((d) => d._id === formData.doctor)?.specialty || "N/A",
+      date: formData.date,
+      time: formData.time,
+      reason: formData.reason,
+    };
+
+    const existing =
+      JSON.parse(localStorage.getItem("appointments") || "[]") || [];
+    existing.push(newAppointment);
+    localStorage.setItem("appointments", JSON.stringify(existing));
+
+    console.log("✅ Appointment saved locally:", newAppointment);
+    toast.success("Appointment booked successfully!");
+
+    setLoading(false);
+    setSuccess(true);
+
+    // Force redirect after 2 seconds
+    setTimeout(() => {
+      console.log("🔁 Redirecting to /my-appointments...");
+      navigate("/my-appointments");
+    }, 2000);
+  }, 1000);
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
-      {/* Navbar */}
-      <Navbar user={user} onLogout={handleLogout} />
-
-      {/* Form Section */}
+      <Navbar user={user} />
       <section className="pt-32 pb-20 px-4 sm:px-6 lg:px-8">
-        <div className="container mx-auto max-w-4xl">
-          <div className="text-center mb-12 animate-fade-in">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-              Book an{" "}
-              <span className="bg-gradient-to-r from-blue-500 to-cyan-500 bg-clip-text text-transparent">
-                Appointment
-              </span>
-            </h1>
-            <p className="text-xl text-gray-600">Schedule your visit with our expert doctors</p>
-          </div>
-
-          {/* Appointment Card */}
-          <div className="bg-white shadow-2xl rounded-3xl p-8 animate-scale-in">
-            <h2 className="text-2xl font-bold mb-6">Appointment Details</h2>
-            <form onSubmit={handleSubmit} className="space-y-6">
-
-              {/* Grid Inputs */}
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-gray-700 font-medium">Patient Name</label>
-                  <input
-                    type="text"
-                    placeholder="John Doe"
-                    value={formData.patientName}
-                    onChange={(e) => setFormData({ ...formData, patientName: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-gray-700 font-medium">Email</label>
-                  <input
-                    type="email"
-                    placeholder="your.email@example.com"
-                    value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-gray-700 font-medium">Phone Number</label>
-                  <input
-                    type="tel"
-                    placeholder="+1 (555) 000-0000"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-gray-700 font-medium">Select Doctor</label>
+        <div className="container mx-auto max-w-4xl bg-white shadow-2xl rounded-3xl p-8">
+          {success ? (
+            <div className="text-center py-10">
+              <div className="text-6xl mb-4">✅</div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">
+                Appointment Confirmed!
+              </h2>
+              <p className="text-gray-600">
+                Redirecting to your appointments...
+              </p>
+            </div>
+          ) : (
+            <>
+              <h1 className="text-3xl font-bold mb-8 text-center">
+                Book an Appointment
+              </h1>
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div>
+                  <label className="block font-medium mb-1">
+                    Select Doctor
+                  </label>
                   <select
                     value={formData.doctor}
-                    onChange={(e) => setFormData({ ...formData, doctor: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    onChange={(e) =>
+                      setFormData({ ...formData, doctor: e.target.value })
+                    }
+                    className="w-full border rounded-lg px-3 py-2"
                     required
                   >
                     <option value="">Choose a doctor</option>
-                    <option value="dr-johnson">Dr. Sarah Johnson - Cardiologist</option>
-                    <option value="dr-chen">Dr. Michael Chen - Dermatologist</option>
-                    <option value="dr-williams">Dr. Emily Williams - Pediatrician</option>
-                    <option value="dr-rodriguez">Dr. James Rodriguez - Orthopedic</option>
-                    <option value="dr-anderson">Dr. Lisa Anderson - Neurologist</option>
+                    {doctors.map((doc) => (
+                      <option key={doc._id} value={doc._id}>
+                        {doc.name} — {doc.specialty}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-gray-700 font-medium">Preferred Date</label>
-                  <input
-                    type="date"
-                    value={formData.date}
-                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    required
-                  />
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <label className="block font-medium mb-1">
+                      Preferred Date
+                    </label>
+                    <input
+                      type="date"
+                      value={formData.date}
+                      onChange={(e) =>
+                        setFormData({ ...formData, date: e.target.value })
+                      }
+                      className="w-full border rounded-lg px-3 py-2"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block font-medium mb-1">
+                      Preferred Time
+                    </label>
+                    <input
+                      type="time"
+                      value={formData.time}
+                      onChange={(e) =>
+                        setFormData({ ...formData, time: e.target.value })
+                      }
+                      className="w-full border rounded-lg px-3 py-2"
+                      required
+                    />
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-gray-700 font-medium">Preferred Time</label>
-                  <input
-                    type="time"
-                    value={formData.time}
-                    onChange={(e) => setFormData({ ...formData, time: e.target.value })}
-                    className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                <div>
+                  <label className="block font-medium mb-1">
+                    Reason for Visit
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={formData.reason}
+                    onChange={(e) =>
+                      setFormData({ ...formData, reason: e.target.value })
+                    }
+                    className="w-full border rounded-lg px-3 py-2"
+                    placeholder="Describe your symptoms or reason..."
                     required
-                  />
+                  ></textarea>
                 </div>
-              </div>
 
-              {/* Reason */}
-              <div className="space-y-2">
-                <label className="text-gray-700 font-medium">Reason for Visit</label>
-                <textarea
-                  placeholder="Please describe your symptoms or reason for visit..."
-                  value={formData.reason}
-                  onChange={(e) => setFormData({ ...formData, reason: e.target.value })}
-                  rows={4}
-                  className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  required
-                />
-              </div>
-
-              {/* Submit */}
-              <button
-                type="submit"
-                className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-lg py-4 rounded-lg hover:opacity-90 transition-all"
-              >
-                Book Appointment
-              </button>
-            </form>
-          </div>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className={`w-full text-white py-3 rounded-lg ${
+                    loading
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-gradient-to-r from-blue-500 to-cyan-500 hover:opacity-90"
+                  }`}
+                >
+                  {loading ? "Booking..." : "Book Appointment"}
+                </button>
+              </form>
+            </>
+          )}
         </div>
       </section>
     </div>

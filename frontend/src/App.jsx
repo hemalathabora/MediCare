@@ -4,6 +4,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import Doctors from "./pages/Doctors";
 import Appointments from "./pages/Appointments";
+import MyAppointments from "./pages/MyAppointments";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import About from "./pages/About";
@@ -13,6 +14,7 @@ import PatientDashboard from "./pages/PatientDashboard";
 import MedicalRecords from "./pages/MedicalRecords";
 import Billing from "./pages/Billing";
 import Dashboard from "./pages/Dashboard";
+
 const queryClient = new QueryClient();
 
 const App = () => {
@@ -23,6 +25,7 @@ const App = () => {
           <Route path="/" element={<Index />} />
           <Route path="/doctors" element={<Doctors />} />
           <Route path="/appointments" element={<Appointments />} />
+          <Route path="/my-appointments" element={<MyAppointments />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/about" element={<About />} />
@@ -30,8 +33,8 @@ const App = () => {
           <Route path="/patient-dashboard" element={<PatientDashboard />} />
           <Route path="/medical-records" element={<MedicalRecords />} />
           <Route path="/billing" element={<Billing />} />
-          <Route path="*" element={<NotFound />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>

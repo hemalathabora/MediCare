@@ -1,10 +1,11 @@
-// components/Navbar.jsx
 import { Link, useNavigate } from "react-router-dom";
 import { Activity, User } from "lucide-react";
 import { useState } from "react";
+import { useAuth } from "../context/AuthContext"; // ✅ use global context
 
-const Navbar = ({ user, onLogout }) => {
+const Navbar = () => {
   const navigate = useNavigate();
+  const { user, logout } = useAuth(); // ✅ get user globally
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const handleProfile = () => {
@@ -14,8 +15,8 @@ const Navbar = ({ user, onLogout }) => {
 
   const handleLogout = () => {
     setDropdownOpen(false);
-    onLogout();
-    navigate("/");
+    logout(); // ✅ global logout
+    navigate("/login");
   };
 
   return (
@@ -46,7 +47,6 @@ const Navbar = ({ user, onLogout }) => {
         <div className="flex items-center gap-3 relative">
           {user ? (
             <div className="relative">
-              {/* Avatar Icon */}
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
                 className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-500 text-white hover:shadow-lg transition"
@@ -54,7 +54,6 @@ const Navbar = ({ user, onLogout }) => {
                 <User className="h-6 w-6" />
               </button>
 
-              {/* Dropdown Menu */}
               {dropdownOpen && (
                 <div className="absolute right-0 mt-2 w-44 bg-white border border-gray-200 rounded-lg shadow-lg py-2 z-50">
                   <button

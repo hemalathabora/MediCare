@@ -1,11 +1,12 @@
-// pages/Login.jsx
 import { Link, useNavigate } from "react-router-dom";
 import { Activity } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { useAuth } from "../context/AuthContext"; // ✅ import global auth
 
 const Login = () => {
   const navigate = useNavigate();
+  const { login } = useAuth(); // ✅ get login method from context
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,12 +31,23 @@ const Login = () => {
           description: `Welcome back, ${data.fullName}`,
         });
 
-        // Save JWT token & user info
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("user", JSON.stringify(data));
+        // ✅ Store user in global context + localStorage
+        const userData = {
+          _id: data._id,
+          fullName: data.fullName,
+          email: data.email,
+          phone: data.phone,
+          role: data.role,
+        };
 
-        // Redirect to home page
-        navigate("/");
+        login(userData, data.token); // 🔥 updates global context instantly
+
+        // ✅ Redirect based on role
+        if (data.role === "admin") {
+          navigate("/admin");
+        } else {
+          navigate("/patient-dashboard");
+        }
       }
     } catch (err) {
       console.error(err);
